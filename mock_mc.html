@@ -1,1 +1,192 @@
-mock MC implementation
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mock MC Implementation</title>
+<style>
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        max-width: 700px;
+        margin: 40px auto;
+        padding: 0 20px;
+        color: #222;
+    }
+    h1 {
+        font-size: 22px;
+        border-bottom: 2px solid #444;
+        padding-bottom: 8px;
+    }
+    section {
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+        background: #fafafa;
+    }
+    section h2 {
+        margin-top: 0;
+        font-size: 18px;
+        color: #333;
+    }
+    .field {
+        margin-bottom: 14px;
+    }
+    label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 4px;
+        font-size: 14px;
+    }
+    input[type="text"], select {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 8px;
+        font-size: 14px;
+        border: 1px solid #aaa;
+        border-radius: 4px;
+    }
+    input[readonly] {
+        background: #eee;
+        color: #555;
+    }
+    button {
+        background: #2a6df4;
+        color: #fff;
+        border: none;
+        padding: 10px 24px;
+        font-size: 15px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    button:hover {
+        background: #1a56d6;
+    }
+    .hidden {
+        display: none;
+    }
+    .note {
+        font-size: 12px;
+        color: #777;
+        margin-top: 4px;
+    }
+</style>
+</head>
+<body>
+
+<h1>Mock MC Implementation</h1>
+
+<section id="input-parameter-section">
+    <h2>Input Parameter</h2>
+    <div class="field">
+        <label for="authSessionId">authSessionId</label>
+        <input type="text" id="authSessionId" readonly>
+    </div>
+</section>
+
+<section id="output-parameter-section">
+    <h2>Output Parameter</h2>
+
+    <div class="field">
+        <label for="callbackUri">callbackUri</label>
+        <input type="text" id="callbackUri" value="https://paysdk.github.io/testCallback.html">
+    </div>
+
+    <div class="field">
+        <label for="status">status</label>
+        <select id="status">
+            <option value="ENROLLED">ENROLLED</option>
+            <option value="AUTHENTICATED">AUTHENTICATED</option>
+            <option value="AUTHENTICATOR_ASSERTED">AUTHENTICATOR_ASSERTED</option>
+            <option value="ERROR">ERROR</option>
+            <option value="CANCELLED">CANCELLED</option>
+        </select>
+    </div>
+
+    <div class="field">
+        <label for="proofOfAuthentication">proofOfAuthentication</label>
+        <input type="text" id="proofOfAuthentication" value="proofOfAuthValue">
+    </div>
+
+    <div class="field hidden" id="reason-field">
+        <label for="reason">reason</label>
+        <input type="text" id="reason" value="failure reason">
+        <div class="note">Only used/visible when status is ERROR or CANCELLED</div>
+    </div>
+
+    <button id="submitBtn">Submit</button>
+</section>
+
+<script>
+    // Parse query params from current URL and populate input parameter section
+    function getQueryParams() {
+        var params = {};
+        var queryString = window.location.search.substring(1);
+        if (!queryString) return params;
+        var pairs = queryString.split('&');
+        for (var i = 0; i < pairs.length; i++) {
+            var pair = pairs[i].split('=');
+            var key = decodeURIComponent(pair[0]);
+            var value = pair.length > 1 ? decodeURIComponent(pair.slice(1).join('=')) : '';
+            params[key] = value;
+        }
+        return params;
+    }
+
+    var queryParams = getQueryParams();
+
+    document.getElementById('authSessionId').value = queryParams['authSessionId'] || '';
+
+    var statusSelect = document.getElementById('status');
+    var reasonField = document.getElementById('reason-field');
+
+    function toggleReasonField() {
+        var val = statusSelect.value;
+        if (val === 'ERROR' || val === 'CANCELLED') {
+            reasonField.classList.remove('hidden');
+        } else {
+            reasonField.classList.add('hidden');
+        }
+    }
+
+    statusSelect.addEventListener('change', toggleReasonField);
+    toggleReasonField();
+
+    document.getElementById('submitBtn').addEventListener('click', function () {
+        var callbackUri = document.getElementById('callbackUri').value.trim();
+        if (!callbackUri) {
+            alert('callbackUri cannot be empty');
+            return;
+        }
+
+        var status = statusSelect.value;
+        var proofOfAuthentication = document.getElementById('proofOfAuthentication').value;
+        var authSessionId = document.getElementById('authSessionId').value;
+
+        var resultParams = {};
+
+        if (authSessionId) {
+            resultParams['authSessionId'] = authSessionId;
+        }
+        resultParams['status'] = status;
+        resultParams['proofOfAuthentication'] = proofOfAuthentication;
+
+        if (status === 'ERROR' || status === 'CANCELLED') {
+            resultParams['reason'] = document.getElementById('reason').value;
+        }
+
+        var queryStringParts = [];
+        for (var key in resultParams) {
+            if (resultParams.hasOwnProperty(key)) {
+                queryStringParts.push(encodeURIComponent(key) + '=' + encodeURIComponent(resultParams[key]));
+            }
+        }
+
+        var separator = callbackUri.indexOf('?') === -1 ? '?' : '&';
+        var finalUrl = callbackUri + separator + queryStringParts.join('&');
+
+        window.location.href = finalUrl;
+    });
+</script>
+
+</body>
+</html>
