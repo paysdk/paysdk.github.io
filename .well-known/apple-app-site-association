@@ -3,7 +3,9 @@
         "details": [
             {
                 "appIDs": [
-                    "LMY4YJ949Q.com.thalesgroup.gemalto.d1.demo"
+                    "LMY4YJ949Q.com.thalesgroup.gemalto.d1.demo",
+                    "LMY4YJ949Q.com.thalesgroup.gemalto.d1.D1IntegrationTestsApp",
+                    "LMY4YJ949Q.com.thalesgroup.gemalto.d1.PenTestApp"
                 ],
                 "components": [
                     {
@@ -16,7 +18,9 @@
     },
     "webcredentials": {
         "apps": [
-            "LMY4YJ949Q.com.thalesgroup.gemalto.d1.demo"
+            "LMY4YJ949Q.com.thalesgroup.gemalto.d1.demo",
+            "LMY4YJ949Q.com.thalesgroup.gemalto.d1.demo",
+            "LMY4YJ949Q.com.thalesgroup.gemalto.d1.PenTestApp"
         ]
     }
 }
