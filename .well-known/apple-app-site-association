@@ -5,7 +5,8 @@
                 "appIDs": [
                     "LMY4YJ949Q.com.thalesgroup.gemalto.d1.demo",
                     "LMY4YJ949Q.com.thalesgroup.gemalto.d1.D1IntegrationTestsApp",
-                    "LMY4YJ949Q.com.thalesgroup.gemalto.d1.PenTestApp"
+                    "LMY4YJ949Q.com.thalesgroup.gemalto.d1.PenTestApp",
+                    "3FBLP567G3.com.thalesgroup.gemalto.d1.D1IntegrationTestsApp"
                 ],
                 "components": [
                     {
@@ -20,7 +21,8 @@
         "apps": [
             "LMY4YJ949Q.com.thalesgroup.gemalto.d1.demo",
             "LMY4YJ949Q.com.thalesgroup.gemalto.d1.demo",
-            "LMY4YJ949Q.com.thalesgroup.gemalto.d1.PenTestApp"
+            "LMY4YJ949Q.com.thalesgroup.gemalto.d1.PenTestApp",
+            "3FBLP567G3.com.thalesgroup.gemalto.d1.D1IntegrationTestsApp"
         ]
     }
 }
