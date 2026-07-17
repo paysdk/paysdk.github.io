@@ -225,20 +225,32 @@
 
     document.getElementById('submitBtn').addEventListener('click', doSubmit);
 
-    // Auto-submit behavior based on query parameters:
-    // - If 'submit' query parameter equals 'true' (case insensitive), auto trigger submit.
-    // - If 'callbackUri' query parameter is present, use it as the callbackUri value instead of the default.
-    (function handleAutoSubmit() {
+    // Pre-fill Output Parameter fields from incoming query parameters (input parameters take priority).
+    // - callbackUri: overrides the default callback URL text box.
+    // - status: pre-selects the matching dropdown option (case-insensitive); if no match, a new option
+    //           is added to the dropdown with that value and selected, so custom/unlisted statuses can be tested.
+    // - proofOfAuthentication: overrides the default text box value.
+    // - reason: overrides the default text box value (still only shown when status is ERROR/CANCELLED).
+    (function prefillFromQueryParams() {
         var submitParamKey = null;
         var callbackUriParamKey = null;
+        var statusParamKey = null;
+        var proofOfAuthenticationParamKey = null;
+        var reasonParamKey = null;
 
         for (var key in queryParams) {
             if (queryParams.hasOwnProperty(key)) {
-                if (key.toLowerCase() === 'submit') {
+                var lowerKey = key.toLowerCase();
+                if (lowerKey === 'submit') {
                     submitParamKey = key;
-                }
-                if (key.toLowerCase() === 'callbackuri') {
+                } else if (lowerKey === 'callbackuri') {
                     callbackUriParamKey = key;
+                } else if (lowerKey === 'status') {
+                    statusParamKey = key;
+                } else if (lowerKey === 'proofofauthentication') {
+                    proofOfAuthenticationParamKey = key;
+                } else if (lowerKey === 'reason') {
+                    reasonParamKey = key;
                 }
             }
         }
@@ -247,11 +259,44 @@
             document.getElementById('callbackUri').value = queryParams[callbackUriParamKey];
         }
 
+        if (statusParamKey) {
+            var incomingStatus = queryParams[statusParamKey];
+            var matchedOption = null;
+            var options = statusSelect.options;
+            for (var i = 0; i < options.length; i++) {
+                if (options[i].value.toLowerCase() === incomingStatus.toLowerCase()) {
+                    matchedOption = options[i];
+                    break;
+                }
+            }
+
+            if (matchedOption) {
+                statusSelect.value = matchedOption.value;
+            } else {
+                var newOption = document.createElement('option');
+                newOption.value = incomingStatus;
+                newOption.textContent = incomingStatus;
+                statusSelect.appendChild(newOption);
+                statusSelect.value = incomingStatus;
+            }
+
+            toggleReasonField();
+        }
+
+        if (proofOfAuthenticationParamKey) {
+            document.getElementById('proofOfAuthentication').value = queryParams[proofOfAuthenticationParamKey];
+        }
+
+        if (reasonParamKey) {
+            document.getElementById('reason').value = queryParams[reasonParamKey];
+        }
+
         if (submitParamKey && queryParams[submitParamKey].toLowerCase() === 'true') {
             doSubmit();
         }
     })();
 </script>
+
 
 
 </body>
