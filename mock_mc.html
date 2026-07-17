@@ -183,7 +183,7 @@
     statusSelect.addEventListener('change', toggleReasonField);
     toggleReasonField();
 
-    document.getElementById('submitBtn').addEventListener('click', function () {
+    function doSubmit() {
         var callbackUri = document.getElementById('callbackUri').value.trim();
         if (!callbackUri) {
             alert('callbackUri cannot be empty');
@@ -221,8 +221,38 @@
         var finalUrl = callbackUri + separator + queryStringParts.join('&');
 
         window.location.href = finalUrl;
-    });
+    }
+
+    document.getElementById('submitBtn').addEventListener('click', doSubmit);
+
+    // Auto-submit behavior based on query parameters:
+    // - If 'submit' query parameter equals 'true' (case insensitive), auto trigger submit.
+    // - If 'callbackUri' query parameter is present, use it as the callbackUri value instead of the default.
+    (function handleAutoSubmit() {
+        var submitParamKey = null;
+        var callbackUriParamKey = null;
+
+        for (var key in queryParams) {
+            if (queryParams.hasOwnProperty(key)) {
+                if (key.toLowerCase() === 'submit') {
+                    submitParamKey = key;
+                }
+                if (key.toLowerCase() === 'callbackuri') {
+                    callbackUriParamKey = key;
+                }
+            }
+        }
+
+        if (callbackUriParamKey) {
+            document.getElementById('callbackUri').value = queryParams[callbackUriParamKey];
+        }
+
+        if (submitParamKey && queryParams[submitParamKey].toLowerCase() === 'true') {
+            doSubmit();
+        }
+    })();
 </script>
+
 
 </body>
 </html>
