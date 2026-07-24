@@ -1,3 +1,7 @@
+<!--
+  ~ Copyright © 2026 THALES. All rights reserved.
+  -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -134,6 +138,15 @@
     </div>
 
     <button id="submitBtn">Submit</button>
+    
+    <div id="auto-submit-notice" style="display: none; margin-top: 15px; padding: 12px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px;">
+        <p style="margin: 0; color: #856404; font-size: 14px;">
+            ⏱️ Auto-submitting in <strong id="countdown" style="font-size: 16px; color: #d9534f;">5</strong> seconds...
+            <button id="cancelAutoSubmit" style="margin-left: 15px; padding: 6px 16px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
+                Cancel Auto-Submit
+            </button>
+        </p>
+    </div>
 </section>
 
 <script>
@@ -356,28 +369,64 @@
         }
     })();
 
-    // Auto-click submitBtn after 5 seconds if user hasn't clicked it
+    // Auto-click submitBtn after 5 seconds with countdown display
     (function autoClickAfterDelay() {
         var autoClickTimer = null;
+        var countdownInterval = null;
         var submitBtn = document.getElementById('submitBtn');
+        var autoSubmitNotice = document.getElementById('auto-submit-notice');
+        var countdownElement = document.getElementById('countdown');
+        var cancelBtn = document.getElementById('cancelAutoSubmit');
         var hasUserClicked = false;
+        var secondsLeft = 5;
 
-        // Start 5-second timer
+        // Show the countdown notice
+        autoSubmitNotice.style.display = 'block';
+
+        // Update countdown every second
+        countdownInterval = setInterval(function() {
+            secondsLeft--;
+            countdownElement.textContent = secondsLeft;
+            
+            if (secondsLeft <= 0) {
+                clearInterval(countdownInterval);
+            }
+        }, 1000);
+
+        // Start 5-second timer for auto-submit
         autoClickTimer = setTimeout(function() {
             if (!hasUserClicked) {
                 console.log('Auto-clicking submit button after 5 seconds of inactivity');
+                autoSubmitNotice.style.display = 'none';
                 doSubmit();
             }
-        }, 5000); // 5 seconds
+        }, 5000);
 
-        // If user clicks manually, cancel the auto-click timer
+        // If user clicks Submit manually, cancel everything
         submitBtn.addEventListener('click', function() {
             hasUserClicked = true;
             if (autoClickTimer) {
                 clearTimeout(autoClickTimer);
-                console.log('User clicked manually - auto-click cancelled');
             }
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+            autoSubmitNotice.style.display = 'none';
+            console.log('User clicked manually - auto-click cancelled');
         }, { once: true });
+
+        // If user clicks Cancel button, stop auto-submit
+        cancelBtn.addEventListener('click', function() {
+            hasUserClicked = true;
+            if (autoClickTimer) {
+                clearTimeout(autoClickTimer);
+            }
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+            autoSubmitNotice.style.display = 'none';
+            console.log('Auto-submit cancelled by user');
+        });
     })();
 </script>
 
