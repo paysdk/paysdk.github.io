@@ -1,95 +1,99 @@
+<!--
+  ~ Copyright © 2026 THALES. All rights reserved.
+  -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Mock MC Implementation</title>
-<style>
-    body {
-        font-family: Arial, Helvetica, sans-serif;
-        max-width: 700px;
-        margin: 40px auto;
-        padding: 0 20px;
-        color: #222;
-    }
-    h1 {
-        font-size: 22px;
-        border-bottom: 2px solid #444;
-        padding-bottom: 8px;
-    }
-    section {
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        padding: 16px 20px;
-        margin-bottom: 24px;
-        background: #fafafa;
-    }
-    section h2 {
-        margin-top: 0;
-        font-size: 18px;
-        color: #333;
-    }
-    .field {
-        margin-bottom: 14px;
-    }
-    label {
-        display: block;
-        font-weight: bold;
-        margin-bottom: 4px;
-        font-size: 14px;
-    }
-    input[type="text"], select {
-        width: 100%;
-        box-sizing: border-box;
-        padding: 8px;
-        font-size: 14px;
-        border: 1px solid #aaa;
-        border-radius: 4px;
-    }
-    input[readonly] {
-        background: #eee;
-        color: #555;
-    }
-    button {
-        background: #2a6df4;
-        color: #fff;
-        border: none;
-        padding: 10px 24px;
-        font-size: 15px;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-    button:hover {
-        background: #1a56d6;
-    }
-    .hidden {
-        display: none;
-    }
-    .note {
-        font-size: 12px;
-        color: #777;
-        margin-top: 4px;
-    }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 8px;
-    }
-    th, td {
-        text-align: left;
-        padding: 8px 10px;
-        border-bottom: 1px solid #ddd;
-        font-size: 14px;
-        word-break: break-all;
-    }
-    th {
-        background: #f2f2f2;
-    }
-    .empty {
-        color: #888;
-        font-style: italic;
-        margin-top: 8px;
-    }
-</style>
+    <meta charset="UTF-8">
+    <title>Mock MC Implementation</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 0 20px;
+            color: #222;
+        }
+        h1 {
+            font-size: 22px;
+            border-bottom: 2px solid #444;
+            padding-bottom: 8px;
+        }
+        section {
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            background: #fafafa;
+        }
+        section h2 {
+            margin-top: 0;
+            font-size: 18px;
+            color: #333;
+        }
+        .field {
+            margin-bottom: 14px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+        input[type="text"], select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #aaa;
+            border-radius: 4px;
+        }
+        input[readonly] {
+            background: #eee;
+            color: #555;
+        }
+        button {
+            background: #2a6df4;
+            color: #fff;
+            border: none;
+            padding: 10px 24px;
+            font-size: 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #1a56d6;
+        }
+        .hidden {
+            display: none;
+        }
+        .note {
+            font-size: 12px;
+            color: #777;
+            margin-top: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+        th, td {
+            text-align: left;
+            padding: 8px 10px;
+            border-bottom: 1px solid #ddd;
+            font-size: 14px;
+            word-break: break-all;
+        }
+        th {
+            background: #f2f2f2;
+        }
+        .empty {
+            color: #888;
+            font-style: italic;
+            margin-top: 8px;
+        }
+    </style>
 </head>
 <body>
 
@@ -120,14 +124,16 @@
         </select>
     </div>
 
-    <div class="field">
+    <div class="field" id="proofOfAuthentication-field">
         <label for="proofOfAuthentication">proofOfAuthentication</label>
         <input type="text" id="proofOfAuthentication" value="proofOfAuthValue">
     </div>
 
     <div class="field hidden" id="reason-field">
         <label for="reason">reason</label>
-        <input type="text" id="reason" value="failure reason">
+        <select id="reason">
+            <option value="USER_CANCELLATION">USER_CANCELLATION</option>
+        </select>
         <div class="note">Only used/visible when status is ERROR or CANCELLED</div>
     </div>
 
@@ -170,13 +176,51 @@
 
     var statusSelect = document.getElementById('status');
     var reasonField = document.getElementById('reason-field');
+    var proofOfAuthenticationField = document.getElementById('proofOfAuthentication-field');
 
     function toggleReasonField() {
         var val = statusSelect.value;
+        var reasonSelect = document.getElementById('reason');
+        
         if (val === 'ERROR' || val === 'CANCELLED') {
             reasonField.classList.remove('hidden');
+            proofOfAuthenticationField.classList.add('hidden');
+            
+            // Clear existing options
+            reasonSelect.innerHTML = '';
+            
+            if (val === 'CANCELLED') {
+                // Only USER_CANCELLATION option
+                var option = document.createElement('option');
+                option.value = 'USER_CANCELLATION';
+                option.textContent = 'USER_CANCELLATION';
+                reasonSelect.appendChild(option);
+            } else if (val === 'ERROR') {
+                // All error options
+                var errorReasons = [
+                    'CREDENTIALS_NOT_VERIFIED',
+                    'DUPLICATE_CREDENTIALS',
+                    'CREDENTIALS_CREATION_NOT_ALLOWED',
+                    'INVALID_QUERY_PARAMS',
+                    'INVALID_ARGUMENT',
+                    'PERMISSION_DENIED',
+                    'FORBIDDEN',
+                    'NOT_FOUND',
+                    'INVALID_STATE',
+                    'SERVICE_UNAVAILABLE',
+                    'SERVICE_ERROR',
+                    'UNKNOWN_ERROR'
+                ];
+                errorReasons.forEach(function(reason) {
+                    var option = document.createElement('option');
+                    option.value = reason;
+                    option.textContent = reason;
+                    reasonSelect.appendChild(option);
+                });
+            }
         } else {
             reasonField.classList.add('hidden');
+            proofOfAuthenticationField.classList.remove('hidden');
         }
     }
 
@@ -191,7 +235,6 @@
         }
 
         var status = statusSelect.value;
-        var proofOfAuthentication = document.getElementById('proofOfAuthentication').value;
 
         var resultParams = {};
 
@@ -204,10 +247,11 @@
 
         resultParams['status'] = status;
 
-        resultParams['proofOfAuthentication'] = proofOfAuthentication;
-
         if (status === 'ERROR' || status === 'CANCELLED') {
             resultParams['reason'] = document.getElementById('reason').value;
+        } else {
+            var proofOfAuthentication = document.getElementById('proofOfAuthentication').value;
+            resultParams['proofOfAuthentication'] = proofOfAuthentication;
         }
 
         var queryStringParts = [];
@@ -288,7 +332,27 @@
         }
 
         if (reasonParamKey) {
-            document.getElementById('reason').value = queryParams[reasonParamKey];
+            var reasonSelect = document.getElementById('reason');
+            var incomingReason = queryParams[reasonParamKey];
+            
+            // Try to find matching option
+            var found = false;
+            for (var i = 0; i < reasonSelect.options.length; i++) {
+                if (reasonSelect.options[i].value === incomingReason) {
+                    reasonSelect.value = incomingReason;
+                    found = true;
+                    break;
+                }
+            }
+            
+            // If not found, add it as a custom option
+            if (!found) {
+                var newOption = document.createElement('option');
+                newOption.value = incomingReason;
+                newOption.textContent = incomingReason;
+                reasonSelect.appendChild(newOption);
+                reasonSelect.value = incomingReason;
+            }
         }
 
         if (submitParamKey && queryParams[submitParamKey].toLowerCase() === 'true') {
