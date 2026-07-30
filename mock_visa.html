@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Mock MC Implementation</title>
+    <title>Mock Visa Implementation</title>
     <style>
         body {
             font-family: Arial, Helvetica, sans-serif;
@@ -93,7 +93,7 @@
 </head>
 <body>
 
-<h1>Mock MC Implementation</h1>
+<h1>Mock Visa Implementation</h1>
 
 <section id="input-parameter-section">
     <h2>Input Parameter</h2>
@@ -112,17 +112,15 @@
     <div class="field">
         <label for="status">status</label>
         <select id="status">
-            <option value="ENROLLED">ENROLLED</option>
-            <option value="AUTHENTICATED">AUTHENTICATED</option>
-            <option value="AUTHENTICATOR_ASSERTED">AUTHENTICATOR_ASSERTED</option>
-            <option value="ERROR">ERROR</option>
-            <option value="CANCELLED">CANCELLED</option>
+            <option value="SUCCESS">SUCCESS</option>
+            <option value="POPUP_WINDOW_TERMINATED">POPUP_WINDOW_TERMINATED</option>
+            <option value="NOTFOUND_AMR_VALUES">NOTFOUND_AMR_VALUES</option>
         </select>
     </div>
 
-    <div class="field" id="proofOfAuthentication-field">
-        <label for="proofOfAuthentication">proofOfAuthentication</label>
-        <input type="text" id="proofOfAuthentication" value="proofOfAuthValue">
+    <div class="field" id="accessToken-field">
+        <label for="accessToken">accessToken</label>
+        <input type="text" id="accessToken" value="eyJ0eXAiO">
     </div>
 
     <div class="field hidden" id="reason-field">
@@ -130,11 +128,11 @@
         <select id="reason">
             <option value="USER_CANCELLATION">USER_CANCELLATION</option>
         </select>
-        <div class="note">Only used/visible when status is ERROR or CANCELLED</div>
+        <div class="note">Only used/visible when status is POPUP_WINDOW_TERMINATED or NOTFOUND_AMR_VALUES</div>
     </div>
 
     <button id="submitBtn">Submit</button>
-    
+
     <div id="auto-submit-notice" style="display: none; margin-top: 15px; padding: 12px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px;">
         <p style="margin: 0; color: #856404; font-size: 14px;">
             ⏱️ Auto-submitting in <strong id="countdown" style="font-size: 16px; color: #d9534f;">5</strong> seconds...
@@ -181,51 +179,32 @@
 
     var statusSelect = document.getElementById('status');
     var reasonField = document.getElementById('reason-field');
-    var proofOfAuthenticationField = document.getElementById('proofOfAuthentication-field');
+    var accessTokenField = document.getElementById('accessToken-field');
 
     function toggleReasonField() {
         var val = statusSelect.value;
         var reasonSelect = document.getElementById('reason');
-        
-        if (val === 'ERROR' || val === 'CANCELLED') {
+
+        if (val === 'POPUP_WINDOW_TERMINATED' || val === 'NOTFOUND_AMR_VALUES') {
             reasonField.classList.remove('hidden');
-            proofOfAuthenticationField.classList.add('hidden');
-            
+            accessTokenField.classList.add('hidden');
+
             // Clear existing options
             reasonSelect.innerHTML = '';
-            
-            if (val === 'CANCELLED') {
-                // Only USER_CANCELLATION option
+
+            // All error options
+            var errorReasons = [
+                'USER_CANCELLATION'
+            ];
+            errorReasons.forEach(function(reason) {
                 var option = document.createElement('option');
-                option.value = 'USER_CANCELLATION';
-                option.textContent = 'USER_CANCELLATION';
+                option.value = reason;
+                option.textContent = reason;
                 reasonSelect.appendChild(option);
-            } else if (val === 'ERROR') {
-                // All error options
-                var errorReasons = [
-                    'CREDENTIALS_NOT_VERIFIED',
-                    'DUPLICATE_CREDENTIALS',
-                    'CREDENTIALS_CREATION_NOT_ALLOWED',
-                    'INVALID_QUERY_PARAMS',
-                    'INVALID_ARGUMENT',
-                    'PERMISSION_DENIED',
-                    'FORBIDDEN',
-                    'NOT_FOUND',
-                    'INVALID_STATE',
-                    'SERVICE_UNAVAILABLE',
-                    'SERVICE_ERROR',
-                    'UNKNOWN_ERROR'
-                ];
-                errorReasons.forEach(function(reason) {
-                    var option = document.createElement('option');
-                    option.value = reason;
-                    option.textContent = reason;
-                    reasonSelect.appendChild(option);
-                });
-            }
+            });
         } else {
             reasonField.classList.add('hidden');
-            proofOfAuthenticationField.classList.remove('hidden');
+            accessTokenField.classList.remove('hidden');
         }
     }
 
@@ -252,11 +231,11 @@
 
         resultParams['status'] = status;
 
-        if (status === 'ERROR' || status === 'CANCELLED') {
+        if (status === 'POPUP_WINDOW_TERMINATED' || status === 'NOTFOUND_AMR_VALUES') {
             resultParams['reason'] = document.getElementById('reason').value;
         } else {
-            var proofOfAuthentication = document.getElementById('proofOfAuthentication').value;
-            resultParams['proofOfAuthentication'] = proofOfAuthentication;
+            var accessToken = document.getElementById('accessToken').value;
+            resultParams['accessToken'] = accessToken;
         }
 
         var queryStringParts = [];
@@ -278,13 +257,13 @@
     // - callbackUri: overrides the default callback URL text box.
     // - status: pre-selects the matching dropdown option (case-insensitive); if no match, a new option
     //           is added to the dropdown with that value and selected, so custom/unlisted statuses can be tested.
-    // - proofOfAuthentication: overrides the default text box value.
-    // - reason: overrides the default text box value (still only shown when status is ERROR/CANCELLED).
+    // - accessToken: overrides the default text box value.
+    // - reason: overrides the default text box value (still only shown when status is POPUP_WINDOW_TERMINATED/NOTFOUND_AMR_VALUES).
     (function prefillFromQueryParams() {
         var submitParamKey = null;
         var callbackUriParamKey = null;
         var statusParamKey = null;
-        var proofOfAuthenticationParamKey = null;
+        var accessTokenParamKey = null;
         var reasonParamKey = null;
 
         for (var key in queryParams) {
@@ -296,8 +275,8 @@
                     callbackUriParamKey = key;
                 } else if (lowerKey === 'status') {
                     statusParamKey = key;
-                } else if (lowerKey === 'proofofauthentication') {
-                    proofOfAuthenticationParamKey = key;
+                } else if (lowerKey === 'accessToken') {
+                    accessTokenParamKey = key;
                 } else if (lowerKey === 'reason') {
                     reasonParamKey = key;
                 }
@@ -332,14 +311,14 @@
             toggleReasonField();
         }
 
-        if (proofOfAuthenticationParamKey) {
-            document.getElementById('proofOfAuthentication').value = queryParams[proofOfAuthenticationParamKey];
+        if (accessTokenParamKey) {
+            document.getElementById('accessToken').value = queryParams[accessTokenParamKey];
         }
 
         if (reasonParamKey) {
             var reasonSelect = document.getElementById('reason');
             var incomingReason = queryParams[reasonParamKey];
-            
+
             // Try to find matching option
             var found = false;
             for (var i = 0; i < reasonSelect.options.length; i++) {
@@ -349,7 +328,7 @@
                     break;
                 }
             }
-            
+
             // If not found, add it as a custom option
             if (!found) {
                 var newOption = document.createElement('option');
@@ -383,7 +362,7 @@
         countdownInterval = setInterval(function() {
             secondsLeft--;
             countdownElement.textContent = secondsLeft;
-            
+
             if (secondsLeft <= 0) {
                 clearInterval(countdownInterval);
             }
