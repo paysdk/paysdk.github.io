@@ -110,7 +110,7 @@
 
     <div class="field">
         <label for="callbackUri">callbackUri</label>
-        <input type="text" id="callbackUri" value="https://paysdk.github.io/testCallbackVisa.html">
+        <input type="text" id="callbackUri" value="https://paysdk.github.io/testCallback.html">
     </div>
 
     <div class="field">
@@ -242,7 +242,7 @@
             resultParams['access_token'] = accessToken;
         }
 
-        // Since static HTML cannot read POST data, we'll use URL hash to pass data
+        // Since static HTML cannot read GET data, we'll use URL hash to pass data
         // This allows the receiving page to access the data via JavaScript
         var queryStringParts = [];
         for (var key in resultParams) {
@@ -251,12 +251,12 @@
             }
         }
 
-        // Create a form for POST submission with data in URL hash
+        // Create a form for GET submission with data in URL hash
         var form = document.createElement('form');
-        form.method = 'POST';
+        form.method = 'GET';
         form.action = callbackUri + '#' + queryStringParts.join('&');
 
-        // Also add parameters as hidden form fields for proper POST
+        // Also add parameters as hidden form fields for proper GET
         for (var key in resultParams) {
             if (resultParams.hasOwnProperty(key)) {
                 var input = document.createElement('input');
